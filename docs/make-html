@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# PYTHONPATH=$PYTHONPATH:..:../resources
+pdoc --overwrite --html ../yamlchecker.py
