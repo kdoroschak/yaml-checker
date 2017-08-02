@@ -7,22 +7,14 @@ import logging
 # import numpy as np
 from datetime import datetime
 
-as_dir = "/homes/gws/kdorosch/software/AlleleSeq_pipeline_v1.2a/"
-sys.path.append(as_dir)
-import MergeBowtieArrays as mergebt
-import SnpCounts
-import CombineSnpCounts
-
-logger = logging.getLogger("yaml_checker")
-
 class YAMLChecker():
-    def __init__(self, yaml_fname, logger):
+    def __init__(self, yaml_fname, logger=None):
         self.yaml_fname = yaml_fname
         self.yaml = self.read_config(self.yaml_fname)
-        self.logger = logger # TODO look up best practices for passing logger in vs stdout
+        self.logger = logger or logging.getLogger(__name__).addHandler(logging.StreamHandler(sys.stdout)) # TODO look up best practices for passing logger in vs stdout
 
-    def read_config(yaml_fname):
-        with open(yaml_file, "r") as f:
+    def read_config(self, yaml_fname):
+        with open(yaml_fname, "r") as f:
             return yaml.load(f)
 
     '''
@@ -36,7 +28,7 @@ class YAMLChecker():
 
     'property' would be accessed by 'layer 1:layer 2'.
     '''
-    def get_variable(var_name):
+    def get_variable(self, var_name):
         nested_names = var_name.split(":")
         current_layer = self.config
         for name in nested_names:
@@ -46,7 +38,7 @@ class YAMLChecker():
 
     ### Definitions of validation functions
 
-    def check_defined(var_name):
+    def check_defined(self, var_name):
         var = self.get_variable(var_name)
         if var is None:
             msg = "--- Variable %s must be defined." % var_name
@@ -55,7 +47,7 @@ class YAMLChecker():
         else:
             self.logger.debug("... Variable %s ok." % var_name)
 
-    def check_nonempty_str(var_name):
+    def check_nonempty_str(self, var_name):
         var = self.get_variable(var_name)
         if var is None or not isinstance(var, basestring) or len(var) == 0:
             msg = "--- Variable %s must be a string that is >=1 char long." % var_name
@@ -64,7 +56,7 @@ class YAMLChecker():
         else:
             self.logger.debug("... Variable %s ok." % var_name)
 
-    def check_file_exists(var_name, optional=False):
+    def check_file_exists(self, var_name, optional=False):
         var = self.get_variable(var_name)
         if var is None or not isinstance(var, basestring) or not os.path.isfile(var):
             if optional:
@@ -77,7 +69,7 @@ class YAMLChecker():
         else:
             self.logger.debug("... Variable %s ok." % var_name)
 
-    def check_directory(var_name, makedirs=False):
+    def check_directory(self, var_name, makedirs=False):
         var = self.get_variable(var_name)
         if var is None or not isinstance(var, basestring) or not os.path.isdir(var):
             if makedirs:
